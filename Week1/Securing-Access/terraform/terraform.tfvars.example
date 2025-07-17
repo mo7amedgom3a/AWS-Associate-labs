@@ -1,0 +1,6 @@
+# Example variable values for the IAM management solution
+# Rename this file to terraform.tfvars to use these values
+
+aws_region             = "us-east-1"
+create_password        = false
+password_reset_required = true
