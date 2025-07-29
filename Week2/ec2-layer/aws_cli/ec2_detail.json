@@ -1,0 +1,176 @@
+{
+    "Reservations": [
+        {
+            "ReservationId": "r-0aced3365f4185f79",
+            "OwnerId": "058264170818",
+            "Groups": [],
+            "Instances": [
+                {
+                    "Architecture": "x86_64",
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/xvda",
+                            "Ebs": {
+                                "AttachTime": "2025-07-26T16:34:01+00:00",
+                                "DeleteOnTermination": true,
+                                "Status": "attached",
+                                "VolumeId": "vol-08e4ea6c9b704bcd5"
+                            }
+                        }
+                    ],
+                    "ClientToken": "bfaa28e6-532a-4ac8-8cfc-aaa236f2dbfc",
+                    "EbsOptimized": false,
+                    "EnaSupport": true,
+                    "Hypervisor": "xen",
+                    "NetworkInterfaces": [
+                        {
+                            "Association": {
+                                "IpOwnerId": "amazon",
+                                "PublicDnsName": "ec2-35-171-82-225.compute-1.amazonaws.com",
+                                "PublicIp": "35.171.82.225"
+                            },
+                            "Attachment": {
+                                "AttachTime": "2025-07-26T16:34:00+00:00",
+                                "AttachmentId": "eni-attach-08ff031c3f68c20d4",
+                                "DeleteOnTermination": true,
+                                "DeviceIndex": 0,
+                                "Status": "attached",
+                                "NetworkCardIndex": 0
+                            },
+                            "Description": "",
+                            "Groups": [
+                                {
+                                    "GroupId": "sg-0c396c9edc60a0814",
+                                    "GroupName": "django-web-sg"
+                                }
+                            ],
+                            "Ipv6Addresses": [],
+                            "MacAddress": "0e:ce:f0:b0:e2:37",
+                            "NetworkInterfaceId": "eni-0311a068c1d73144c",
+                            "OwnerId": "058264170818",
+                            "PrivateDnsName": "ip-10-0-1-111.ec2.internal",
+                            "PrivateIpAddress": "10.0.1.111",
+                            "PrivateIpAddresses": [
+                                {
+                                    "Association": {
+                                        "IpOwnerId": "amazon",
+                                        "PublicDnsName": "ec2-35-171-82-225.compute-1.amazonaws.com",
+                                        "PublicIp": "35.171.82.225"
+                                    },
+                                    "Primary": true,
+                                    "PrivateDnsName": "ip-10-0-1-111.ec2.internal",
+                                    "PrivateIpAddress": "10.0.1.111"
+                                }
+                            ],
+                            "SourceDestCheck": true,
+                            "Status": "in-use",
+                            "SubnetId": "subnet-0bbadc46c0a833c21",
+                            "VpcId": "vpc-01ff309fa96019b18",
+                            "InterfaceType": "interface",
+                            "Operator": {
+                                "Managed": false
+                            }
+                        }
+                    ],
+                    "RootDeviceName": "/dev/xvda",
+                    "RootDeviceType": "ebs",
+                    "SecurityGroups": [
+                        {
+                            "GroupId": "sg-0c396c9edc60a0814",
+                            "GroupName": "django-web-sg"
+                        }
+                    ],
+                    "SourceDestCheck": true,
+                    "Tags": [
+                        {
+                            "Key": "CreatedBy",
+                            "Value": "arn:aws:iam::058264170818:root"
+                        },
+                        {
+                            "Key": "Project",
+                            "Value": "django-web-app"
+                        },
+                        {
+                            "Key": "Name",
+                            "Value": "django-web-server"
+                        },
+                        {
+                            "Key": "Role",
+                            "Value": "web-server"
+                        },
+                        {
+                            "Key": "Environment",
+                            "Value": "development"
+                        }
+                    ],
+                    "VirtualizationType": "hvm",
+                    "CpuOptions": {
+                        "CoreCount": 1,
+                        "ThreadsPerCore": 1
+                    },
+                    "CapacityReservationSpecification": {
+                        "CapacityReservationPreference": "open"
+                    },
+                    "HibernationOptions": {
+                        "Configured": false
+                    },
+                    "MetadataOptions": {
+                        "State": "applied",
+                        "HttpTokens": "optional",
+                        "HttpPutResponseHopLimit": 1,
+                        "HttpEndpoint": "enabled",
+                        "HttpProtocolIpv6": "disabled",
+                        "InstanceMetadataTags": "disabled"
+                    },
+                    "EnclaveOptions": {
+                        "Enabled": false
+                    },
+                    "PlatformDetails": "Linux/UNIX",
+                    "UsageOperation": "RunInstances",
+                    "UsageOperationUpdateTime": "2025-07-26T16:34:00+00:00",
+                    "PrivateDnsNameOptions": {
+                        "HostnameType": "ip-name",
+                        "EnableResourceNameDnsARecord": false,
+                        "EnableResourceNameDnsAAAARecord": false
+                    },
+                    "MaintenanceOptions": {
+                        "AutoRecovery": "default"
+                    },
+                    "CurrentInstanceBootMode": "legacy-bios",
+                    "NetworkPerformanceOptions": {
+                        "BandwidthWeighting": "default"
+                    },
+                    "Operator": {
+                        "Managed": false
+                    },
+                    "InstanceId": "i-02f89c87291bc2b1c",
+                    "ImageId": "ami-0ff8a91507f77f867",
+                    "State": {
+                        "Code": 16,
+                        "Name": "running"
+                    },
+                    "PrivateDnsName": "ip-10-0-1-111.ec2.internal",
+                    "PublicDnsName": "ec2-35-171-82-225.compute-1.amazonaws.com",
+                    "StateTransitionReason": "",
+                    "KeyName": "aws_keys",
+                    "AmiLaunchIndex": 0,
+                    "ProductCodes": [],
+                    "InstanceType": "t2.micro",
+                    "LaunchTime": "2025-07-26T16:34:00+00:00",
+                    "Placement": {
+                        "GroupName": "",
+                        "Tenancy": "default",
+                        "AvailabilityZone": "us-east-1a"
+                    },
+                    "Monitoring": {
+                        "State": "disabled"
+                    },
+                    "SubnetId": "subnet-0bbadc46c0a833c21",
+                    "VpcId": "vpc-01ff309fa96019b18",
+                    "PrivateIpAddress": "10.0.1.111",
+                    "PublicIpAddress": "35.171.82.225"
+                }
+            ]
+        }
+    ]
+}
