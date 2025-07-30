@@ -1,10 +1,8 @@
 from django.urls import path
-from .views import UserListCreateAPIView, UserRetrieveUpdateDestroyAPIView
+from .views import UserListCreateAPIView, UserRetrieveUpdateDestroyAPIView, HealthCheckView
 
 urlpatterns = [
-    # GET (list) and POST (create) endpoints
     path('users/', UserListCreateAPIView.as_view(), name='user-list-create'),
-    
-    # GET (retrieve), PUT (update), PATCH (partial update), and DELETE endpoints
     path('users/<int:pk>/', UserRetrieveUpdateDestroyAPIView.as_view(), name='user-detail'),
+    path('health/', HealthCheckView.as_view(), name='health-check'),
 ]

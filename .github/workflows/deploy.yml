@@ -72,7 +72,9 @@ jobs:
 
     - name: Verify deployment
       run: |
-        # Test Django app
+        # Test health endpoint
+        curl -f -I http://${{ env.EC2_HOST }}/health/ || exit 1
+        # Test API endpoint
         curl -f -I http://${{ env.EC2_HOST }}/api/users/ || exit 1
 
     - name: Health check
@@ -81,6 +83,8 @@ jobs:
         ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cd /opt/django-app && sudo docker-compose ps"
         # Check nginx status
         ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo /etc/init.d/nginx status"
+        # Test health endpoint
+        curl -s http://${{ env.EC2_HOST }}/health/ | jq . || echo "Health check failed"
 
     - name: Notify deployment status
       if: always()
@@ -88,7 +92,8 @@ jobs:
         if [ ${{ job.status }} == 'success' ]; then
           echo "✅ Deployment successful!"
           echo "🌐 Django app is running at http://${{ env.EC2_HOST }}"
-          echo "🔧 Admin interface: http://${{ env.EC2_HOST }}/api/users/"
+          echo "🔧 Health check: http://${{ env.EC2_HOST }}/health/"
+          echo "📊 API endpoint: http://${{ env.EC2_HOST }}/api/users/"
         else
           echo "❌ Deployment failed!"
         fi

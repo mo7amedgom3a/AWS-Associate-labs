@@ -22,11 +22,25 @@
                 proxy_read_timeout 60s;
             }
 
+            location /static/ {
+                alias /opt/django-app/static/;
+                expires 30d;
+                add_header Cache-Control "public, immutable";
+            }
+
+            location /media/ {
+                alias /opt/django-app/media/;
+                expires 30d;
+                add_header Cache-Control "public, immutable";
+            }
 
             # Health check endpoint
             location /health/ {
                 proxy_pass http://127.0.0.1:8000/health/;
                 access_log off;
+                add_header Cache-Control "no-cache, no-store, must-revalidate";
+                add_header Pragma "no-cache";
+                add_header Expires "0";
             }
         }
         EOF
