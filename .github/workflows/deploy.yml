@@ -29,7 +29,6 @@ jobs:
         python -m pip install --upgrade pip
 
 
-
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -53,12 +52,19 @@ jobs:
 
     - name: Setup SSH key
       run: |
+        mkdir -p ~/.ssh
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
-        chmod 600 ~/aws_keys.pem
+        chmod 400 ~/aws_keys.pem
+        ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Test SSH connection
+      run: |
+        ssh -i ~/aws_keys.pem -o ConnectTimeout=30 -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Run Ansible deployment
       run: |
         cd ${{ env.ANSIBLE_DIR }}
+        echo "current directory: $(pwd)"
         ansible-playbook deploy_django.yml -i inventory.yml
 
     - name: Wait for deployment

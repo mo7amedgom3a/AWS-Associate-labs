@@ -1,0 +1,22 @@
+---
+- name: Troubleshoot SSH Connection
+  hosts: ec2-instance
+  gather_facts: no
+  tasks:
+    - name: Test basic connectivity
+      raw: echo "Connection successful - $(date)"
+      changed_when: false
+
+    - name: Check system information
+      raw: |
+        echo "=== System Info ==="
+        uname -a
+        echo "=== Network Info ==="
+        ip addr show
+        echo "=== SSH Service ==="
+        sudo /etc/init.d/sshd status || echo "SSH service not found"
+        echo "=== Docker Status ==="
+        sudo docker ps || echo "Docker not running"
+        echo "=== Nginx Status ==="
+        sudo /etc/init.d/nginx status || echo "Nginx not running"
+      changed_when: false 
