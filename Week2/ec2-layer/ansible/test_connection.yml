@@ -1,0 +1,26 @@
+---
+- name: Test SSH Connection and System Info
+  hosts: ec2-instance
+  gather_facts: no
+  tasks:
+    - name: Test basic connectivity
+      raw: echo "Connection successful - $(date)"
+      changed_when: false
+
+    - name: Get system information
+      raw: |
+        echo "=== System Information ==="
+        uname -a
+        echo "=== Network Information ==="
+        ip addr show
+        echo "=== SSH Service Status ==="
+        sudo /etc/init.d/sshd status || echo "SSH service not found"
+        echo "=== Current User ==="
+        whoami
+        echo "=== Home Directory ==="
+        pwd
+        echo "=== Available Commands ==="
+        which python
+        which docker
+        which nginx
+      changed_when: false 
