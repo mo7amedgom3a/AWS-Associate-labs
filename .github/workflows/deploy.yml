@@ -50,8 +50,6 @@ jobs:
     - name: Install Ansible
       run: |
         sudo apt-get update
-        sudo apt-get install -y software-properties-common
-        sudo apt-add-repository --yes --update ppa:ansible/ansible
         sudo apt-get install -y ansible
 
     # - name: Setup SSH directory and key
@@ -63,9 +61,6 @@ jobs:
     #     echo "SSH key setup completed"
     #     echo "SSH key permissions: $(ls -la ~/.ssh/aws_keys.pem)"
 
-    - name: Test SSH connection
-      run: |
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Test Ansible connection
       run: |
@@ -77,7 +72,7 @@ jobs:
         cd ${{ env.ANSIBLE_DIR }}
         echo "Current directory: $(pwd)"
         echo "Files in current directory: $(ls -la)"
-        ansible-playbook deploy_django.yml -i inventory.yml -vv
+        ansible-playbook deploy_django.yml -i inventory.yml
 
     - name: Wait for deployment
       run: |
@@ -89,13 +84,7 @@ jobs:
         # Test Django app
         curl -f -I http://${{ env.EC2_HOST }}/api/users/ || exit 1
 
-    - name: Health check
-      run: |
-        # Check if containers are running
-        ssh -i ~/.ssh/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cd /opt/django-app && sudo docker-compose ps"
-        # Check nginx status
-        ssh -i ~/.ssh/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo /etc/init.d/nginx status"
-
+   
     - name: Notify deployment status
       if: always()
       run: |
