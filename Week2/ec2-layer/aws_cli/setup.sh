@@ -140,15 +140,11 @@ aws ec2 authorize-security-group-ingress \
   --port 8000 \
   --cidr 0.0.0.0/0 2>/dev/null || true
 
-# Get current IP address for SSH access
-MY_IP=$(curl -s https://checkip.amazonaws.com)
-echo "Allowing SSH access from $MY_IP"
-
 aws ec2 authorize-security-group-ingress \
   --group-id $SECURITY_GROUP_ID \
   --protocol tcp \
   --port 22 \
-  --cidr $MY_IP/32 2>/dev/null || true
+  --cidr 0.0.0.0/0 2>/dev/null || true # Allow SSH access from anywhere
 
 # Create key pair if it doesn't exist
 aws ec2 create-key-pair \
