@@ -31,7 +31,6 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
@@ -42,6 +41,7 @@ jobs:
       uses: webfactory/ssh-agent@v0.4.1
       with:
         ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -52,20 +52,21 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ansible
 
-    # - name: Setup SSH directory and key
-    #   run: |
-    #     mkdir -p ~/.ssh
-    #     echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/aws_keys.pem
-    #     chmod 600 ~/.ssh/aws_keys.pem
-    #     ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
-    #     echo "SSH key setup completed"
-    #     echo "SSH key permissions: $(ls -la ~/.ssh/aws_keys.pem)"
+    - name: Debug connectivity
+      run: |
+        echo "Testing connectivity to ${{ env.EC2_HOST }}"
+        ping -c 3 ${{ env.EC2_HOST }} || echo "Ping failed"
+        nc -zv ${{ env.EC2_HOST }} 22 || echo "Port 22 connection failed"
+        echo "Runner IP: $(curl -s ifconfig.me)"
 
+    - name: Test SSH connection with verbose output
+      run: |
+        ssh -v -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'" || echo "SSH connection failed"
 
     - name: Test Ansible connection
       run: |
         cd ${{ env.ANSIBLE_DIR }}
-        ansible all -m ping -i inventory.yml
+        ansible all -m ping -i inventory.yml -vvv
 
     - name: Run Ansible deployment
       run: |
@@ -84,7 +85,6 @@ jobs:
         # Test Django app
         curl -f -I http://${{ env.EC2_HOST }}/api/users/ || exit 1
 
-   
     - name: Notify deployment status
       if: always()
       run: |
