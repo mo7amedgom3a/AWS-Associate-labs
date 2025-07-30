@@ -53,17 +53,13 @@ jobs:
     - name: Setup SSH key
       run: |
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
-        chmod 400 ~/aws_keys.pem
+        cat ~/aws_keys.pem
+        chmod 600 ~/aws_keys.pem
 
     - name: Run Ansible deployment
       run: |
         cd ${{ env.ANSIBLE_DIR }}
         echo "list the files in the current directory: $(ls)"
-        # Increase SSH connection timeout and retry attempts
-        export ANSIBLE_TIMEOUT=120
-        export ANSIBLE_SSH_RETRIES=5
-        export ANSIBLE_HOST_KEY_CHECKING=False
-        # Add verbose output for debugging
         ansible-playbook deploy_django.yml -i inventory.yml -vv --ssh-extra-args="-o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
 
     - name: Wait for deployment
