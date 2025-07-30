@@ -49,18 +49,18 @@ jobs:
         sudo apt-add-repository --yes --update ppa:ansible/ansible
         sudo apt-get install -y ansible
 
-    - name: Setup SSH directory and key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/aws_keys.pem
-        chmod 600 ~/.ssh/aws_keys.pem
-        ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
-        echo "SSH key setup completed"
-        echo "SSH key permissions: $(ls -la ~/.ssh/aws_keys.pem)"
+    # - name: Setup SSH directory and key
+    #   run: |
+    #     mkdir -p ~/.ssh
+    #     echo "${{ secrets.PRIVATE_KEY }}" > ~/.ssh/aws_keys.pem
+    #     chmod 600 ~/.ssh/aws_keys.pem
+    #     ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
+    #     echo "SSH key setup completed"
+    #     echo "SSH key permissions: $(ls -la ~/.ssh/aws_keys.pem)"
 
     - name: Test SSH connection
       run: |
-        ssh -i ~/.ssh/aws_keys.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
+        ssh -i ${{ secrets.PRIVATE_KEY }} -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Test Ansible connection
       run: |
