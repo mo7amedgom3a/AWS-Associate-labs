@@ -28,6 +28,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
 
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -36,11 +37,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.4.1
-      with:
-        ssh-private-key: ${{ secrets.PRIVATE_KEY }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -50,30 +46,21 @@ jobs:
     - name: Install Ansible
       run: |
         sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo apt-add-repository --yes --update ppa:ansible/ansible
         sudo apt-get install -y ansible
 
-    - name: Debug connectivity
+    - name: Setup SSH key
       run: |
-        echo "Testing connectivity to ${{ env.EC2_HOST }}"
-        ping -c 3 ${{ env.EC2_HOST }} || echo "Ping failed"
-        nc -zv ${{ env.EC2_HOST }} 22 || echo "Port 22 connection failed"
-        echo "Runner IP: $(curl -s ifconfig.me)"
-
-    - name: Test SSH connection with verbose output
-      run: |
-        ssh -v -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'" || echo "SSH connection failed"
-
-    - name: Test Ansible connection
-      run: |
-        cd ${{ env.ANSIBLE_DIR }}
-        ansible all -m ping -i inventory.yml -vvv
+        echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
+        cat ~/aws_keys.pem
+        chmod 600 ~/aws_keys.pem
 
     - name: Run Ansible deployment
       run: |
         cd ${{ env.ANSIBLE_DIR }}
-        echo "Current directory: $(pwd)"
-        echo "Files in current directory: $(ls -la)"
-        ansible-playbook deploy_django.yml -i inventory.yml
+        echo "list the files in the current directory: $(ls)"
+        ansible-playbook deploy_django.yml -i inventory.yml -vv --ssh-extra-args="-o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
 
     - name: Wait for deployment
       run: |
@@ -84,6 +71,13 @@ jobs:
       run: |
         # Test Django app
         curl -f -I http://${{ env.EC2_HOST }}/api/users/ || exit 1
+
+    - name: Health check
+      run: |
+        # Check if containers are running
+        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cd /opt/django-app && sudo docker-compose ps"
+        # Check nginx status
+        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo /etc/init.d/nginx status"
 
     - name: Notify deployment status
       if: always()
