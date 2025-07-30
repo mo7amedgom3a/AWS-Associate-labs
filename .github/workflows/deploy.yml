@@ -56,10 +56,6 @@ jobs:
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
         chmod 600 ~/aws_keys.pem
 
-    - name: Test SSH connection
-      run: |
-        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
-
     - name: Run Ansible deployment
       run: |
         cd ${{ env.ANSIBLE_DIR }}
