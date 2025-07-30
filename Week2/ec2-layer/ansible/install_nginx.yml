@@ -1,0 +1,50 @@
+---
+- name: Install and configure nginx on EC2 instance
+  hosts: ec2-instance
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Update yum cache
+      raw: sudo yum update -y
+      changed_when: false
+
+    - name: Install nginx
+      raw: sudo yum install -y nginx
+      changed_when: false
+
+    - name: Start and enable nginx service
+      raw: |
+        sudo /etc/init.d/nginx start
+        sudo chkconfig nginx on
+      changed_when: false
+
+    - name: Create a simple index.html file
+      raw: |
+        sudo tee /usr/share/nginx/html/index.html > /dev/null << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Welcome to nginx!</title>
+            <style>
+                body {
+                    width: 35em;
+                    margin: 0 auto;
+                    font-family: Tahoma, Verdana, Arial, sans-serif;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Hello Mohamed Gomaa</h1>
+        </body>
+        </html>
+        EOF
+      changed_when: false
+
+    - name: Display nginx status
+      raw: sudo /etc/init.d/nginx status
+      register: nginx_status
+      changed_when: false
+
+    - name: Show nginx status
+      debug:
+        var: nginx_status.stdout_lines 

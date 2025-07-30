@@ -1,0 +1,94 @@
+name: Deploy Django App to EC2
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  EC2_HOST: 52.55.35.4
+  EC2_USER: ec2-user
+  ANSIBLE_DIR: Week2/ec2-layer/ansible
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+
+
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Ansible
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo apt-add-repository --yes --update ppa:ansible/ansible
+        sudo apt-get install -y ansible
+
+    - name: Setup SSH key
+      run: |
+        echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
+        chmod 600 ~/aws_keys.pem
+
+    - name: Test SSH connection
+      run: |
+        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
+
+    - name: Run Ansible deployment
+      run: |
+        cd ${{ env.ANSIBLE_DIR }}
+        ansible-playbook deploy_django.yml -i inventory.yml
+
+    - name: Wait for deployment
+      run: |
+        echo "Waiting for deployment to complete..."
+        sleep 60
+
+    - name: Verify deployment
+      run: |
+        # Test Django app
+        curl -f -I http://${{ env.EC2_HOST }}/api/users/ || exit 1
+
+    - name: Health check
+      run: |
+        # Check if containers are running
+        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "cd /opt/django-app && sudo docker-compose ps"
+        # Check nginx status
+        ssh -i ~/aws_keys.pem ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "sudo /etc/init.d/nginx status"
+
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ ${{ job.status }} == 'success' ]; then
+          echo "✅ Deployment successful!"
+          echo "🌐 Django app is running at http://${{ env.EC2_HOST }}"
+          echo "🔧 Admin interface: http://${{ env.EC2_HOST }}/api/users/"
+        else
+          echo "❌ Deployment failed!"
+        fi

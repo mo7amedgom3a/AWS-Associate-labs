@@ -1,0 +1,57 @@
+---
+- name: Install Docker and Docker Compose
+  hosts: ec2-instance
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Update yum cache
+      raw: sudo yum update -y
+      changed_when: false
+
+    - name: Install required packages
+      raw: |
+        sudo yum install -y yum-utils device-mapper-persistent-data lvm2 curl
+      changed_when: false
+
+    - name: Install Docker for Amazon Linux
+      raw: |
+        sudo yum install -y docker
+        sudo service docker start
+        sudo chkconfig docker on
+        sudo groupadd docker || true
+        sudo usermod -a -G docker ec2-user
+      changed_when: false
+
+    - name: Install Docker Compose
+      raw: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+      changed_when: false
+
+    - name: Verify Docker installation
+      raw: sudo docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Show Docker version
+      debug:
+        var: docker_version.stdout_lines
+
+    - name: Verify Docker Compose installation
+      raw: sudo docker-compose --version
+      register: compose_version
+      changed_when: false
+
+    - name: Show Docker Compose version
+      debug:
+        var: compose_version.stdout_lines
+
+    - name: Test Docker
+      raw: sudo docker run hello-world
+      register: docker_test
+      changed_when: false
+
+    - name: Show Docker test result
+      debug:
+        var: docker_test.stdout_lines 

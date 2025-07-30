@@ -124,20 +124,3 @@ resource "aws_ecr_repository" "django_app" {
   })
 }
 
-# Create infrastructure details file, similar to the bash script
-resource "local_file" "infrastructure_details" {
-  filename = "${path.module}/infrastructure-details.txt"
-  content  = <<-EOF
-EC2_INSTANCE_ID=${aws_instance.web.id}
-EC2_PUBLIC_IP=${aws_instance.web.public_ip}
-SECURITY_GROUP_ID=${aws_security_group.web_sg.id}
-ECR_REPOSITORY_URL=${aws_ecr_repository.django_app.repository_url}
-VPC_ID=${aws_vpc.main.id}
-SSH_COMMAND="ssh -i ${var.private_key_path} ec2-user@${aws_instance.web.public_ip}"
-  EOF
-
-  depends_on = [
-    aws_instance.web,
-    aws_ecr_repository.django_app
-  ]
-}

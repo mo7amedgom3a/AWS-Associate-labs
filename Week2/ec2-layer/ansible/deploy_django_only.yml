@@ -1,0 +1,66 @@
+---
+- name: Deploy Django app from GitHub (Docker already installed)
+  hosts: ec2-instance
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Install wget and unzip
+      raw: sudo yum install -y wget unzip
+      changed_when: false
+
+    - name: Create application directory
+      raw: sudo mkdir -p /opt/django-app && sudo chown ec2-user:ec2-user /opt/django-app
+      changed_when: false
+
+    - name: Download project from GitHub
+      raw: |
+        cd /opt
+        wget https://github.com/mo7amedgom3a/AWS-Associate-labs/archive/refs/heads/main.zip
+        unzip main.zip
+        cp -r AWS-Associate-labs-main/Week2/ec2-layer/django-app/* /opt/django-app/
+        rm -rf AWS-Associate-labs-main main.zip
+      changed_when: false
+
+    - name: Set proper permissions
+      raw: sudo chown -R ec2-user:ec2-user /opt/django-app
+      changed_when: false
+
+    - name: Create .env file for Django
+      raw: |
+        cat > /opt/django-app/.env << 'EOF'
+        DEBUG=True
+        SECRET_KEY=your-secret-key-here
+        DATABASE_URL=postgresql://mohamed:2003@db:5432/users
+        EOF
+      changed_when: false
+
+    - name: Build and start Docker containers
+      raw: |
+        cd /opt/django-app
+        sudo docker-compose up -d --build
+      changed_when: false
+
+    - name: Wait for containers to be ready
+      raw: sleep 45
+      changed_when: false
+
+    - name: Run Django migrations
+      raw: |
+        cd /opt/django-app
+        sudo docker-compose exec -T web python manage.py migrate --noinput
+      changed_when: false
+
+    - name: Create Django superuser (optional)
+      raw: |
+        cd /opt/django-app
+        echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', 'admin@example.com', 'admin123') if not User.objects.filter(username='admin').exists() else None" | sudo docker-compose exec -T web python manage.py shell
+      changed_when: false
+
+    - name: Display Docker containers status
+      raw: sudo docker ps
+      register: docker_status
+      changed_when: false
+
+    - name: Show Docker containers status
+      debug:
+        var: docker_status.stdout_lines 

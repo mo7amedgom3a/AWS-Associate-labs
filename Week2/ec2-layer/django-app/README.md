@@ -54,6 +54,33 @@ A simple REST API implementation for managing user data built with Django REST F
    docker-compose exec web python manage.py createsuperuser
    ```
 
+### Deploying to Docker Hub
+
+1. Login to Docker Hub:
+   ```
+   docker login
+   ```
+
+2. Set your Docker Hub username in the environment (or directly in docker-compose.yml):
+   ```
+   export DOCKER_USERNAME=yourusername
+   ```
+
+3. Build the images:
+   ```
+   docker-compose build
+   ```
+
+4. Push the images to Docker Hub:
+   ```
+   docker-compose push web
+   ```
+
+5. To pull and use the published image:
+   ```
+   docker pull yourusername/django-user-api:latest
+   ```
+
 ### Environment Variables
 
 Create a `.env` file in the project root with these variables:
@@ -67,6 +94,7 @@ DB_PASSWORD=2003
 DB_HOST=db
 DB_PORT=5432
 ALLOWED_HOSTS=[*]
+DOCKER_USERNAME=yourusername  # Add your Docker Hub username here
 ```
 
 ## Project Structure
