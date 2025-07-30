@@ -52,14 +52,13 @@ jobs:
 
     - name: Setup SSH key
       run: |
-        mkdir -p ~/.ssh
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
         chmod 400 ~/aws_keys.pem
 
     - name: Run Ansible deployment
       run: |
         cd ${{ env.ANSIBLE_DIR }}
-        echo "current directory: $(pwd)"
+        echo "list the files in the current directory: $(ls)"
         ansible-playbook deploy_django.yml -i inventory.yml
 
     - name: Wait for deployment
