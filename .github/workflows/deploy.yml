@@ -31,12 +31,17 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.4.1
+      with:
+        ssh-private-key: ${{ secrets.PRIVATE_KEY }}
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -60,7 +65,7 @@ jobs:
 
     - name: Test SSH connection
       run: |
-        ssh -i ${{ secrets.PRIVATE_KEY }} -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Test Ansible connection
       run: |
