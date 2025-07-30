@@ -28,7 +28,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
 
-
   deploy:
     needs: test
     runs-on: ubuntu-latest
@@ -53,8 +52,12 @@ jobs:
     - name: Setup SSH key
       run: |
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
-        cat ~/aws_keys.pem
         chmod 600 ~/aws_keys.pem
+        echo "SSH key permissions: $(ls -la ~/aws_keys.pem)"
+
+    - name: Test SSH connection
+      run: |
+        ssh -i ~/aws_keys.pem -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Run Ansible deployment
       run: |
