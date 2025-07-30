@@ -59,7 +59,12 @@ jobs:
       run: |
         cd ${{ env.ANSIBLE_DIR }}
         echo "list the files in the current directory: $(ls)"
-        ansible-playbook deploy_django.yml -i inventory.yml
+        # Increase SSH connection timeout and retry attempts
+        export ANSIBLE_TIMEOUT=120
+        export ANSIBLE_SSH_RETRIES=5
+        export ANSIBLE_HOST_KEY_CHECKING=False
+        # Add verbose output for debugging
+        ansible-playbook deploy_django.yml -i inventory.yml -vv --ssh-extra-args="-o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
 
     - name: Wait for deployment
       run: |
