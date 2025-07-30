@@ -55,11 +55,6 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.PRIVATE_KEY }}" > ~/aws_keys.pem
         chmod 400 ~/aws_keys.pem
-        ssh-keyscan -H ${{ env.EC2_HOST }} >> ~/.ssh/known_hosts
-
-    - name: Test SSH connection
-      run: |
-        ssh -i ~/aws_keys.pem -o ConnectTimeout=30 -o StrictHostKeyChecking=no ${{ env.EC2_USER }}@${{ env.EC2_HOST }} "echo 'SSH connection successful'"
 
     - name: Run Ansible deployment
       run: |
