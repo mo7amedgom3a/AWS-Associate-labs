@@ -1,0 +1,199 @@
+# Virtual Private Cloud (VPC)
+
+## VPC Name: Lab VPC
+### CIDR Block: 10.0.0.0/16
+
+A logically isolated section of the AWS Cloud where resources are deployed.
+
+Provides control over networking, including IP addressing, subnets, route tables, and gateways.
+
+CIDR ranges are divided into subnets (public and private).
+
+![VPC Diagram](vpc.png)
+## Steps to create VPC
+1. Open AWS Management Console and navigate to VPC service
+2. In the left navigation pane, select "Your VPCs"
+3. Click "Create VPC"
+4. Configure VPC settings:
+    - **Name tag**: Lab VPC
+    - **IPv4 CIDR**: 10.0.0.0/16
+5. Click "Create VPC"
+6. Navigate to the "Tags" tab to add identifying tags
+7. Go to "Actions" → "Edit VPC settings"
+8. Enable DNS settings:
+    - Select "Enable DNS hostnames"
+9. Click "Save"
+## 2. Subnets
+
+### Public Subnet (10.0.0.0/24):
+
+A subnet that is associated with a route to the Internet Gateway.
+
+Resources in this subnet can directly communicate with the internet (if they have public IPs).
+
+Hosts the Application Server.
+
+### Private Subnet (10.0.2.23/24):
+
+A subnet without a direct route to the internet.
+
+Used for resources that should not be publicly accessible.
+
+Provides additional security by isolating internal services from external traffic.
+
+### Steps to create public and private Subnets
+
+#### Public Subnet Creation:
+1. In the VPC console, select "Subnets" from the left navigation pane
+2. Click "Create subnet"
+3. Configure public subnet settings:
+    - **VPC ID**: Select "Lab VPC"
+    - **Subnet name**: Public Subnet
+    - **Availability Zone**: Choose an AZ (e.g., us-east-1a)
+    - **IPv4 CIDR block**: 10.0.0.0/24
+4. Click "Create subnet"
+5. Select the created public subnet
+6. Go to "Actions" → "Modify auto-assign IP settings"
+7. Check "Enable auto-assign public IPv4 address"
+8. Click "Save"
+
+#### Private Subnet Creation:
+1. Click "Create subnet" again
+2. Configure private subnet settings:
+    - **VPC ID**: Select "Lab VPC"
+    - **Subnet name**: Private Subnet
+    - **Availability Zone**: Choose an AZ (e.g., us-east-1b)
+    - **IPv4 CIDR block**: 10.0.2.0/24
+3. Click "Create subnet"
+4. Leave auto-assign public IP disabled for the private subnet
+
+#### Associate Subnets with Route Tables:
+1. Navigate to "Route Tables" in the left navigation pane
+2. Create a public route table:
+    - Click "Create route table"
+    - **Name**: Public Route Table
+    - **VPC**: Lab VPC
+3. Select the public route table and go to "Routes" tab
+4. Click "Edit routes" → "Add route"
+5. Add route: 0.0.0.0/0 → Internet Gateway
+6. Go to "Subnet associations" tab
+7. Click "Edit subnet associations"
+8. Select the Public Subnet and save
+
+## 3. Internet Gateway
+
+Connects the VPC to the internet.
+
+Enables resources in the public subnet to send/receive traffic from the internet.
+
+Required for public IP communication.
+
+### Steps to create an Internet Gateway
+
+1. In the VPC console, select "Internet Gateways" from the left navigation pane
+2. Click "Create internet gateway"
+3. **Name tag**: Lab Internet Gateway
+4. Click "Create"
+5. Select the created Internet Gateway
+6. Click "Actions" → "Attach to VPC"
+7. Select "Lab VPC" and click "Attach"
+
+## 4. Application Server
+
+Deploy Nginx Server for static content hosting.
+
+Accessible from the internet if the security group rules allow it.
+
+### Steps to create EC2 with Nginx webserver 
+1. Navigate to EC2 service in the AWS Management Console
+2. Click "Launch Instance"
+3. Configure instance settings:
+    - **Name**: Lab Web Server
+    - **AMI**: Amazon Linux 2023 AMI
+    - **Instance type**: t2.micro (free tier eligible)
+    - **Key pair**: Select existing or create new key pair for SSH access
+4. Network settings:
+    - **VPC**: Lab VPC
+    - **Subnet**: Public Subnet
+    - **Auto-assign public IP**: Enable
+    - **Security group**: Create new security group
+      - Allow SSH (port 22) from your IP
+      - Allow HTTP (port 80) from anywhere (0.0.0.0/0)
+      - Allow HTTPS (port 443) from anywhere (0.0.0.0/0)
+5. In "Advanced details", add the following User Data script:
+
+```bash
+#!/bin/bash
+# Update system packages
+yum update -y
+
+# Install nginx
+yum install -y nginx
+
+# Start nginx service
+systemctl start nginx
+
+# Enable nginx to start on boot
+systemctl enable nginx
+
+# Create a simple HTML page
+cat > /var/www/html/index.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+     <title>Hello World</title>
+</head>
+<body>
+     <h1>Welcome to Hello World</h1>
+     <p>This server is running in the public subnet of our VPC.</p>
+     <p>Server IP: $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)</p>
+</body>
+</html>
+EOF
+
+# Set proper permissions
+chown nginx:nginx /var/www/html/index.html
+chmod 644 /var/www/html/index.html
+
+# Restart nginx to ensure all changes take effect
+systemctl restart nginx
+```
+
+6. Review configuration and click "Launch instance"
+7. Wait for instance to reach "running" state
+8. Test connectivity by accessing the public IP address in a web browser
+
+## 5. Security Group
+
+A virtual firewall attached to the Application Server.
+
+Controls inbound and outbound traffic at the instance level.
+
+Stateful: return traffic is automatically allowed.
+
+### Example:
+
+Inbound rule: Allow HTTP (port 80) and SSH (port 22) from the internet.
+
+Outbound rule: Allow all traffic to the internet and private subnet.
+
+## 6. Internet Access Flow
+
+Internet traffic enters through the Internet Gateway.
+
+Routes are directed to the Public Subnet (10.0.0.0/24).
+
+The Application Server in the public subnet receives traffic based on Security Group rules.
+
+The Application Server can then communicate with resources in the Private Subnet.
+
+## Summary
+
+This architecture provides a simple two-tier VPC setup:
+
+- **Public Subnet**: Hosts the application server, accessible from the internet.
+- **Private Subnet**: Reserved for backend services (e.g., databases) that do not need internet exposure.
+- **Security Group**: Protects the application server by filtering traffic.
+- **Internet Gateway**: Allows internet connectivity for resources in the public subnet.
+
+This setup balances accessibility and security by exposing only necessary resources while protecting private resources.

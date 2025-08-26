@@ -1,0 +1,95 @@
+# Private EC2 Access to S3 via Gateway VPC Endpoint
+![Architecture Diagram](vpc_gateway_endpoint.png)
+## 📖 Overview
+
+This architecture demonstrates how an EC2 instance inside a private subnet can access an Amazon S3 bucket without using the Internet or a NAT Gateway. Instead, it leverages an Amazon VPC Gateway Endpoint, which provides a private and secure connection to S3 through the AWS backbone network.
+
+## 🏗️ Architecture Components
+
+- **VPC (Virtual Private Cloud)**: A logically isolated network in AWS.
+- **Private Subnet**: Contains the EC2 instance, with no direct internet access.
+- **EC2 Instance**: The compute resource that needs to access data stored in S3.
+- **Amazon S3 Bucket**: Storage service hosting objects to be accessed by the EC2 instance.
+- **Gateway VPC Endpoint (for S3)**: A private endpoint that allows communication with S3 without traversing the internet.
+- **Private Route Table**: Configured to route S3 traffic through the Gateway VPC Endpoint.
+
+## 🔄 How It Works
+
+1. The EC2 instance resides in a private subnet with no Internet Gateway or NAT Gateway.
+2. A Gateway VPC Endpoint is created for Amazon S3 and associated with the private subnet's route table.
+3. The route table automatically receives a new route with a prefix list (pl-xxxx) that represents S3's IP ranges for the region, pointing to the gateway endpoint ID.
+4. When the EC2 instance makes a request to S3 (for example using `aws s3 ls`), the traffic is routed internally via the endpoint, never leaving the AWS private network.
+5. The S3 bucket can optionally be restricted with bucket policies that only allow access through the VPC endpoint.
+
+## ✅ Benefits
+
+- **No Internet exposure** → EC2 can access S3 without public IP or internet route.
+- **Cost savings** → No NAT Gateway is required.
+- **Enhanced security** → Endpoint and bucket policies enforce private-only access.
+
+## 🛠️ Steps to Implement
+
+### 1. Create a VPC and Subnets
+
+- Create a new VPC or use an existing one.
+- Create at least one private subnet.
+- Launch an EC2 instance in the private subnet.
+
+### 2. Configure Route Table
+
+- Create a private route table and associate it with the private subnet.
+- Ensure it has no direct route to the internet.
+### 3. Create S3 Bucket
+
+- Navigate to the S3 Console → Create Bucket.
+- Configure the bucket settings as needed.
+
+### 4. Create a Gateway VPC Endpoint
+
+- Navigate to VPC Console → Endpoints → Create Endpoint.
+- Service category: AWS services.
+- Service name: Select `com.amazonaws.<region>.s3`.
+- Endpoint type: Gateway.
+- Attach it to the private route table.
+
+After creation, a new route appears in the route table:
+- **Destination**: pl-xxxxxxxx (S3 Prefix List ID)
+- **Target**: vpce-xxxxxxxx (Gateway Endpoint ID)
+
+### 4. Configure IAM Roles and Policies
+
+- Attach an IAM role to the EC2 instance with required S3 access policies (e.g., AmazonS3ReadOnlyAccess).
+- Optionally, configure the S3 bucket policy to only allow access via the specific endpoint.
+
+### 5. Test the Setup
+
+- SSH into the EC2 instance (through a bastion host or SSM Session Manager).
+- Run:
+    ```bash
+    aws s3 ls s3://<your-bucket-name>
+    ```
+- Verify that the EC2 instance can list the S3 bucket contents.
+
+## 🔒 Example S3 Bucket Policy (Restrict Access to VPC Endpoint)
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::your-bucket-name",
+                "arn:aws:s3:::your-bucket-name/*"
+            ],
+            "Condition": {
+                "StringNotEquals": {
+                    "aws:sourceVpce": "vpce-xxxxxxxx"
+                }
+            }
+        }
+    ]
+}
+```
+

@@ -1,0 +1,11 @@
+AWS Resources Created - 26 أغس, 2025 EEST 06:45:55 م
+========================================
+VPC_ID=vpc-0e5736be1893f2e51 (existing)
+IGW_ID=igw-00d76864eda676268 (existing)
+PUBLIC_SUBNET_ID=subnet-0371be78015faad5a (existing)
+PRIVATE_SUBNET_ID=subnet-0d03e79188f311e40 (existing)
+ROUTE_TABLE_ID=rtb-0e848ec2a00d04fb9 (existing)
+SECURITY_GROUP_ID=sg-0c27106e35a2d2c52 (existing)
+EC2_INSTANCE_ID=i-0d33ba2a053492301 (existing)
+EC2_PUBLIC_IP=35.173.184.153
+COMPLETED=26 أغس, 2025 EEST 06:46:19 م
