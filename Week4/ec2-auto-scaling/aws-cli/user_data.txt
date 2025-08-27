@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Install necessary packages
+yum update -y
+yum install -y httpd
+
+# Start the web server
+systemctl start httpd
+systemctl enable httpd
+
+# Create a simple HTML page
+echo "<html><h1>Welcome to my EC2 instance!</h1></html>" > /var/www/html/index.html

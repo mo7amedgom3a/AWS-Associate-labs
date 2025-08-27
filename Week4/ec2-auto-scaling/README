@@ -1,0 +1,50 @@
+# README – EC2 Auto Scaling with CloudWatch Monitoring
+
+## 📌 Project Overview
+
+This project demonstrates how to create an EC2 Auto Scaling Group (ASG) that automatically increases or decreases the number of running EC2 instances based on CPU utilization, using AWS Auto Scaling and Amazon CloudWatch.
+
+- If CPU utilization > 50% → Auto Scaling adds an EC2 instance (scale out).
+- If CPU utilization < 50% → Auto Scaling terminates an EC2 instance (scale in).
+
+We automate the setup using a Bash script that creates:
+
+- A Launch Template for EC2 instances.
+- An Auto Scaling Group (ASG).
+- Scaling policies for scale-out and scale-in.
+- CloudWatch alarms that trigger the scaling policies.
+
+## ⚙️ Components
+
+### 1. Launch Template
+
+Defines how EC2 instances are launched, including:
+
+- AMI (Amazon Machine Image)
+- Instance type (e.g., t2.micro)
+- Key pair
+- Security group(s)
+- Subnet
+
+### 2. Auto Scaling Group (ASG)
+
+- Manages a group of EC2 instances.
+- Ensures the desired capacity of instances is always maintained.
+- Can scale between a minimum and maximum number of instances.
+
+### 3. Scaling Policies
+
+- **Scale Out Policy**: Adds one instance when CPU > 50%.
+- **Scale In Policy**: Removes one instance when CPU < 50%.
+
+### 4. CloudWatch Alarms
+
+- Monitor the CPUUtilization metric.
+- Trigger scaling policies when thresholds are breached.
+
+## 🚀 How Auto Scaling Works
+
+- **Scale Out**: When workload increases and CPU utilization is consistently above 50%, Auto Scaling adds an EC2 instance.
+- **Scale In**: When workload decreases and CPU utilization is consistently below 50%, Auto Scaling terminates an instance (but never below the minimum size).
+
+This ensures high availability and cost optimization.

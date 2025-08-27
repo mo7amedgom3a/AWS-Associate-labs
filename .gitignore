@@ -1,7 +1,7 @@
 # Terraform state files
 *.tfstate
 *.tfstate.*
-
+.prompet
 # Terraform crash log files
 crash.log
 crash.*.log

@@ -1,0 +1,10 @@
+# Auto Scaling Group Resources
+ACCOUNT_ID=058264170818
+REGION=us-east-1
+LAUNCH_TEMPLATE_ID=lt-0933287e0861e0d88
+LAUNCH_TEMPLATE_NAME=my-templet-web-server
+ASG_NAME=my-asg
+SCALE_OUT_POLICY_ARN=arn:aws:autoscaling:us-east-1:058264170818:scalingPolicy:3a907813-1efc-4199-b19d-34695b285086:autoScalingGroupName/my-asg:policyName/cpu-scaleout-policy
+SCALE_IN_POLICY_ARN=arn:aws:autoscaling:us-east-1:058264170818:scalingPolicy:cf04a209-9b6b-46f9-9ecd-12bc851a7453:autoScalingGroupName/my-asg:policyName/cpu-scalein-policy
+SCALEOUT_ALARM_NAME=cpu-scaleout-alarm
+SCALEIN_ALARM_NAME=cpu-scalein-alarm
