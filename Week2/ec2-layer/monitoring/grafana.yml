@@ -1,0 +1,51 @@
+- name: Install and Configure Grafana on monitoring server
+  hosts: prometheus
+  become: yes
+  tasks:
+    - name: Import Grafana GPG key
+      rpm_key:
+        state: present
+        key: https://packages.grafana.com/gpg.key
+
+    - name: Add Grafana repository
+      yum_repository:
+        name: grafana
+        description: grafana
+        baseurl: https://packages.grafana.com/oss/rpm
+        repo_gpgcheck: yes
+        enabled: yes
+        gpgcheck: yes
+        gpgkey: https://packages.grafana.com/gpg.key
+
+    - name: Install Grafana
+      yum:
+        name: grafana
+        state: present
+
+    - name: Configure Grafana
+      ini_file:
+        path: /etc/grafana/grafana.ini
+        section: "{{ item.section }}"
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        backup: yes
+      loop:
+        - { section: "server", option: "http_port", value: "3000" }
+        - { section: "server", option: "domain", value: "localhost" }
+        - { section: "security", option: "admin_user", value: "admin" }
+        - { section: "security", option: "admin_password", value: "admin123" }
+      notify: restart grafana
+
+    - name: Start and enable Grafana service
+      systemd:
+        name: grafana-server
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Wait for Grafana to start
+      wait_for:
+        port: 3000
+        host: localhost
+        delay: 10
+        timeout: 60

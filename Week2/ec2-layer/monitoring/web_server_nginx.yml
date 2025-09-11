@@ -1,0 +1,19 @@
+- name: Install Nginx
+  hosts: node_exporter
+  become: yes
+  tasks:
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Start Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Customize Nginx default page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "Hello World\n"

@@ -1,0 +1,82 @@
+- name: Install Prometheus on monitoring server
+  hosts: prometheus
+  become: yes
+  tasks:
+    - name: Download Prometheus
+      get_url:
+        url: https://github.com/prometheus/prometheus/releases/download/v2.53.2/prometheus-2.53.2.linux-amd64.tar.gz
+        dest: /tmp/prometheus.tar.gz
+
+    - name: Extract Prometheus
+      unarchive:
+        src: /tmp/prometheus.tar.gz
+        dest: /usr/local/bin/
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Create prometheus user
+      user:
+        name: prometheus
+        system: yes
+        shell: /bin/false
+        home: /var/lib/prometheus
+        createhome: no
+
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: prometheus
+        group: prometheus
+      loop:
+        - /etc/prometheus
+        - /var/lib/prometheus
+
+    - name: Configure Prometheus
+      copy:
+        dest: /etc/prometheus/prometheus.yml
+        owner: prometheus
+        group: prometheus
+        content: |
+          global:
+            scrape_interval: 15s
+          scrape_configs:
+            - job_name: "prometheus"
+              static_configs:
+                - targets: ["localhost:9090"]
+            - job_name: "node_exporter"
+              static_configs:
+                - targets:
+                    - "35.175.253.80:9100"
+                    - "54.89.93.188:9100"
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/prometheus.service
+        content: |
+          [Unit]
+          Description=Prometheus
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=prometheus
+          Group=prometheus
+          ExecStart=/usr/local/bin/prometheus \
+            --config.file=/etc/prometheus/prometheus.yml \
+            --storage.tsdb.path=/var/lib/prometheus/ \
+            --web.console.templates=/etc/prometheus/consoles \
+            --web.console.libraries=/etc/prometheus/console_libraries
+          Restart=always
+          RestartSec=3
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd and start Prometheus
+      systemd:
+        name: prometheus
+        state: started
+        enabled: yes
+        daemon_reload: yes
+

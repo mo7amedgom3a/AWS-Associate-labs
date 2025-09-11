@@ -1,0 +1,28 @@
+---
+
+- name: Setup Node Exporter
+  hosts: node_exporter
+  become: yes
+  tasks:
+    - name: Install Node Exporter
+      shell: |
+        cd /tmp
+        wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
+        tar -xvzf node_exporter-1.7.0.linux-amd64.tar.gz
+        mv node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
+        useradd -rs /bin/false nodeusr || true
+        cat <<EOF | tee /etc/systemd/system/node_exporter.service
+        [Unit]
+        Description=Node Exporter
+        After=network.target
+
+        [Service]
+        User=nodeusr
+        ExecStart=/usr/local/bin/node_exporter
+
+        [Install]
+        WantedBy=default.target
+        EOF
+        systemctl daemon-reload
+        systemctl enable node_exporter --now
+
