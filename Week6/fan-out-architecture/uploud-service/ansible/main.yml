@@ -1,0 +1,77 @@
+---
+- name: Deploy React app on EC2
+  hosts: all
+  become: yes
+  vars:
+    react_app_src: /path/to/build   # path to your React app build folder on control machine
+    react_app_dest: /var/www/react-app  # where the app will live on EC2
+    nodejs_version: "18.x"          # version of Node.js you want to install
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name: [curl, gnupg, ca-certificates]
+        state: present
+
+    - name: Add Node.js official APT repo
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }} | bash -
+      args:
+        warn: false
+
+    - name: Install Node.js and npm
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Copy React app build to server
+      copy:
+        src: "{{ react_app_src }}/"
+        dest: "{{ react_app_dest }}/"
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Configure Nginx to serve React app
+      copy:
+        dest: /etc/nginx/sites-available/react-app
+        content: |
+          server {
+              listen 80;
+              server_name _;
+              root {{ react_app_dest }};
+              index index.html index.htm;
+
+              location / {
+                  try_files $uri /index.html;
+              }
+          }
+      notify: Reload Nginx
+
+    - name: Enable React app site
+      file:
+        src: /etc/nginx/sites-available/react-app
+        dest: /etc/nginx/sites-enabled/react-app
+        state: link
+      notify: Reload Nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload Nginx
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: restarted

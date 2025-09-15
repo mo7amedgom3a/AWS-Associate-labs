@@ -7,4 +7,5 @@ variable "aws_region" {
 variable "notification_email" {
 	description = "Email address to receive SNS notifications."
 	type        = string
+	default     = "mo7amed.gom3a.7moda@gmail.com"
 }
