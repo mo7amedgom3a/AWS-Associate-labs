@@ -1,0 +1,15 @@
+[Unit]
+Description=Celery Worker
+After=network.target redis.service
+
+[Service]
+User=ec2-user
+WorkingDirectory=/opt/processing-service
+Environment="AWS_REGION=us-east-1"
+Environment="DYNAMODB_TABLE_NAME=ImageMetadata"
+Environment="CELERY_BROKER_URL=redis://localhost:6379/0"
+ExecStart=/usr/bin/python3.8 -m celery -A tasks worker --loglevel=info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
