@@ -26,3 +26,11 @@ terraform.rc
 
 # Terraform plan files
 *.tfplan
+
+
+# python virtual environment
+{env_name}/
+venv/
+ENV/
+env/
+.venv/
