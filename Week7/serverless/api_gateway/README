@@ -1,0 +1,142 @@
+# **Serverless E-Commerce Application: Technical Requirements**
+
+## **1\. Project Overview**
+
+This document outlines the technical requirements for a serverless web application designed for e-commerce. The architecture separates the frontend from the backend services, leveraging a microservices pattern for handling products and orders independently.  
+The application will feature a static frontend, a RESTful API built with FastAPI, and will be deployed on AWS using a serverless approach. Infrastructure will be managed via Terraform, and the API logic will be deployed as Docker containers on AWS Lambda.
+
+## **2\. Architecture Diagram**
+![Architecture Diagram](serverless_architecture_Diagram.png)
+
+The application follows the architecture detailed below:
+
+### **Data Flow:**
+
+1. The user interacts with the **Static Website** hosted on Amazon S3.  
+2. Client-side requests for data are sent to the **API Gateway**.  
+3. API Gateway routes requests based on the URL path to the appropriate AWS Lambda function:  
+   * Requests to /products/\* are directed to the **Products Service**.  
+   * Requests to /orders/\* are directed to the **Orders Service**.  
+4. Each Lambda function executes its logic, interacts with its dedicated database, and returns a response.  
+5. The response is sent back through API Gateway to the client.
+
+## **3\. Core Technologies**
+
+* **Backend Framework**: FastAPI  
+* **Infrastructure as Code**: Terraform  
+* **Containerization**: Docker  
+* **Cloud Provider**: Amazon Web Services (AWS)  
+  * **Compute**: AWS Lambda  
+  * **API Management**: Amazon API Gateway  
+  * **Storage (Static Files)**: Amazon S3  
+  * **Databases**: Amazon RDS for MySQL & Amazon DynamoDB
+
+## **4\. Component Breakdown**
+
+### **4.1. Static Website (Amazon S3)**
+
+* **Description**: The frontend of the application, consisting of HTML, CSS, and JavaScript files. It is responsible for the user interface and all client-side logic.  
+* **Implementation**: Hosted as a static website on an Amazon S3 bucket, configured for public web access.
+
+### **4.2. Amazon API Gateway**
+
+* **Description**: Acts as the single entry point for all API requests. It routes incoming HTTP requests to the correct backend Lambda function.  
+* **Implementation**: An HTTP API will be configured with routes that trigger the corresponding Lambda functions based on path patterns (/products/\* and /orders/\*).
+
+### **4.3. AWS Lambda Functions (FastAPI on Docker)**
+
+* **Description**: Two separate Lambda functions will host our backend microservices. Each service is a FastAPI application packaged into a Docker container image.  
+* **Implementation**:  
+  * **Products Service**: Manages product catalog information. It connects to the Amazon RDS (MySQL) instance.  
+  * **Orders Service**: Manages customer orders. It connects to the Amazon DynamoDB table.  
+* **Deployment**: The Docker images for each service will be stored in Amazon ECR (Elastic Container Registry) and deployed to their respective Lambda functions.
+
+## **5\. Database Schemas**
+
+### **5.1. Products Table (Amazon RDS \- MySQL)**
+
+The products table will store detailed information about each product in a structured, relational format.  
+**SQL Schema:**  
+CREATE TABLE products (  
+    product\_id VARCHAR(36) PRIMARY KEY,  
+    sku VARCHAR(100) NOT NULL UNIQUE,  
+    name VARCHAR(255) NOT NULL,  
+    description TEXT,  
+    price DECIMAL(10, 2\) NOT NULL,  
+    stock\_quantity INT NOT NULL DEFAULT 0,  
+    is\_active BOOLEAN NOT NULL DEFAULT TRUE,  
+    created\_at TIMESTAMP DEFAULT CURRENT\_TIMESTAMP,  
+    updated\_at TIMESTAMP DEFAULT CURRENT\_TIMESTAMP ON UPDATE CURRENT\_TIMESTAMP  
+);
+
+* product\_id: A UUID for the product.  
+* sku: A unique stock-keeping unit.  
+* price: The product price with two decimal places.  
+* stock\_quantity: Current inventory level.
+
+### **5.2. Orders Table (Amazon DynamoDB)**
+
+The orders table is designed for fast, scalable access to order data using a NoSQL model.  
+**Table Configuration:**
+
+* **Table Name**: orders  
+* **Primary Key**:  
+  * **Partition Key (PK)**: order\_id (String) \- A unique UUID for each order.  
+  * **Sort Key (SK)**: customer\_id (String) \- The ID of the customer who placed the order. This allows for efficient querying of all orders for a specific customer.
+
+**Example Item JSON:**  
+{  
+  "order\_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",  
+  "customer\_id": "cust\_a7b8c9d0",  
+  "order\_date": "2025-09-21T10:30:00Z",  
+  "order\_status": "PENDING",  
+  "total\_amount": 149.98,  
+  "shipping\_address": {  
+    "street": "123 Serverless Way",  
+    "city": "Cloud City",  
+    "zip\_code": "12345",  
+    "country": "AWS"  
+  },  
+  "items": \[  
+    {  
+      "product\_id": "prod\_1a2b3c4d",  
+      "quantity": 1,  
+      "price\_per\_unit": 99.99  
+    },  
+    {  
+      "product\_id": "prod\_5e6f7g8h",  
+      "quantity": 2,  
+      "price\_per\_unit": 24.99  
+    }  
+  \]  
+}
+
+## **6\. API Endpoints (FastAPI)**
+
+### **6.1. Products Service (/products)**
+
+* GET /products: Retrieves a list of all products.  
+* POST /products: Creates a new product (admin only).  
+* GET /products/{product\_id}: Retrieves a single product by its ID.  
+* PUT /products/{product\_id}: Updates a product's details.  
+* DELETE /products/{product\_id}: Deletes a product.
+
+### **6.2. Orders Service (/orders)**
+
+* POST /orders: Creates a new order.  
+* GET /orders/{order\_id}?customer\_id={customer\_id}: Retrieves a specific order by its ID and customer ID.  
+* GET /customers/{customer\_id}/orders: Retrieves all orders for a specific customer.  
+* PUT /orders/{order\_id}: Updates an order's status (e.g., to "SHIPPED").
+
+## **7\. Infrastructure & Deployment**
+
+### **7.1. Infrastructure as Code (Terraform)**
+
+* All AWS resources (S3, API Gateway, Lambda, RDS, DynamoDB, ECR, IAM roles) will be defined and managed using Terraform.  
+* This approach ensures repeatable and version-controlled infrastructure provisioning.
+
+### **7.2. Deployment Process**
+
+1. **Build**: The FastAPI application code is built into a Docker image.  
+2. **Push**: The Docker image is pushed to Amazon ECR.  
+3. **Apply**: terraform apply is executed to provision or update the AWS infrastructure. This includes updating the Lambda function to use the new Docker image from ECR.

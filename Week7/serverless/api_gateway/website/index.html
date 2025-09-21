@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serverless E-Commerce</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Serverless E-Commerce</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#cart">Cart <span id="cart-count">0</span></a></li>
+                    <li><a href="#orders">My Orders</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="container">
+                <h2>Welcome to our Serverless Shop</h2>
+                <p>Explore our products powered by AWS Serverless technologies</p>
+                <a href="#products" class="btn">Shop Now</a>
+            </div>
+        </section>
+
+        <section id="products" class="container">
+            <h2>Our Products</h2>
+            <div class="products-grid" id="products-container">
+                <!-- Products will be loaded here dynamically -->
+                <div class="loading">Loading products...</div>
+            </div>
+        </section>
+
+        <section id="cart-section" class="container hidden">
+            <h2>Your Cart</h2>
+            <div id="cart-items">
+                <!-- Cart items will be loaded here dynamically -->
+                <p class="empty-cart">Your cart is empty</p>
+            </div>
+            <div class="cart-summary">
+                <div class="total">
+                    <span>Total:</span>
+                    <span id="cart-total">$0.00</span>
+                </div>
+                <button id="checkout-btn" class="btn" disabled>Checkout</button>
+            </div>
+        </section>
+
+        <section id="orders-section" class="container hidden">
+            <h2>Your Orders</h2>
+            <div class="customer-id-input">
+                <label for="customer-id">Enter your Customer ID:</label>
+                <input type="text" id="customer-id" placeholder="e.g., cust_a7b8c9d0">
+                <button id="load-orders-btn" class="btn">Load Orders</button>
+            </div>
+            <div id="orders-container">
+                <!-- Orders will be loaded here dynamically -->
+            </div>
+        </section>
+
+        <section id="checkout-section" class="container hidden">
+            <h2>Checkout</h2>
+            <form id="checkout-form">
+                <div class="form-group">
+                    <label for="checkout-customer-id">Customer ID:</label>
+                    <input type="text" id="checkout-customer-id" required placeholder="e.g., cust_a7b8c9d0">
+                </div>
+                <div class="form-group">
+                    <label for="checkout-street">Street Address:</label>
+                    <input type="text" id="checkout-street" required placeholder="123 Serverless Way">
+                </div>
+                <div class="form-group">
+                    <label for="checkout-city">City:</label>
+                    <input type="text" id="checkout-city" required placeholder="Cloud City">
+                </div>
+                <div class="form-group">
+                    <label for="checkout-zip">Zip Code:</label>
+                    <input type="text" id="checkout-zip" required placeholder="12345">
+                </div>
+                <div class="form-group">
+                    <label for="checkout-country">Country:</label>
+                    <input type="text" id="checkout-country" required placeholder="AWS">
+                </div>
+                <div class="cart-summary">
+                    <div class="total">
+                        <span>Total:</span>
+                        <span id="checkout-total">$0.00</span>
+                    </div>
+                    <button type="submit" class="btn">Place Order</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Serverless E-Commerce. Built with AWS Serverless technologies.</p>
+        </div>
+    </footer>
+
+    <!-- Product Template -->
+    <template id="product-template">
+        <div class="product-card">
+            <div class="product-image">
+                <img src="" alt="">
+            </div>
+            <div class="product-info">
+                <h3 class="product-name"></h3>
+                <p class="product-description"></p>
+                <div class="product-price"></div>
+                <button class="btn add-to-cart-btn">Add to Cart</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Cart Item Template -->
+    <template id="cart-item-template">
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <h4 class="cart-item-name"></h4>
+                <div class="cart-item-price"></div>
+            </div>
+            <div class="cart-item-quantity">
+                <button class="quantity-btn decrease">-</button>
+                <span class="quantity"></span>
+                <button class="quantity-btn increase">+</button>
+            </div>
+            <button class="remove-btn">Remove</button>
+        </div>
+    </template>
+
+    <!-- Order Template -->
+    <template id="order-template">
+        <div class="order-card">
+            <div class="order-header">
+                <h4>Order ID: <span class="order-id"></span></h4>
+                <div class="order-date"></div>
+                <div class="order-status"></div>
+            </div>
+            <div class="order-items">
+                <!-- Order items will be added here -->
+            </div>
+            <div class="order-total">
+                <span>Total:</span>
+                <span class="total-amount"></span>
+            </div>
+            <div class="order-address">
+                <h5>Shipping Address:</h5>
+                <p class="address-street"></p>
+                <p class="address-city-zip"></p>
+                <p class="address-country"></p>
+            </div>
+        </div>
+    </template>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

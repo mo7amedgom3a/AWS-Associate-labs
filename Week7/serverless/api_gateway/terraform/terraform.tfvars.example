@@ -1,0 +1,9 @@
+aws_region     = "us-east-1"
+project_name   = "serverless-ecommerce"
+environment    = "dev"
+db_username    = "admin"
+db_password    = "2003!"
+db_name        = "products"
+db_instance_class = "db.t3.micro"
+vpc_cidr       = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
