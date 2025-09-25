@@ -29,10 +29,10 @@ variable "db_username" {
   description = "Username for the RDS instance"
   type        = string
 }
-
 variable "db_password" {
   description = "Password for the RDS instance"
   type        = string
+  default = "MySecurePassword123!"
 }
 
 variable "db_name" {
@@ -45,4 +45,10 @@ variable "db_instance_class" {
   description = "Instance class for the RDS instance"
   type        = string
   default     = "db.t3.micro"
+}
+
+variable "initialize_db" {
+  description = "Whether to initialize the database with tables"
+  type        = bool
+  default     = false
 }

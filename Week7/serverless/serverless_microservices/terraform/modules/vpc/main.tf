@@ -9,17 +9,19 @@ resource "aws_vpc" "main" {
   }
 }
 
+# puplic and private subnets
+
 resource "aws_subnet" "public" {
   count                   = length(var.availability_zones)
   vpc_id                  = aws_vpc.main.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
   availability_zone       = var.availability_zones[count.index]
-  map_public_ip_on_launch = true
-  
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-public-${count.index + 1}"
     Environment = var.environment
   }
+
 }
 
 resource "aws_subnet" "private" {
@@ -27,7 +29,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + length(var.availability_zones))
   availability_zone = var.availability_zones[count.index]
-  
+
   tags = {
     Name        = "${var.project_name}-${var.environment}-private-${count.index + 1}"
     Environment = var.environment
@@ -43,17 +45,17 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-resource "aws_eip" "nat" {
-  domain = "vpc"
-  
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-eip"
-    Environment = var.environment
+# use existing eip
+data "aws_eip" "nat" {
+  filter {
+    name   = "tag:Name"
+    values = ["nat-eip"]
   }
 }
 
+
 resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
+  allocation_id = "eipalloc-07e30e087ab001852"
   subnet_id     = aws_subnet.public[0].id
   
   tags = {
@@ -132,7 +134,17 @@ resource "aws_security_group" "db" {
     from_port       = 3306
     to_port         = 3306
     protocol        = "tcp"
-    security_groups = [aws_security_group.lambda.id] # refrencing the lambda security group
+    security_groups = [aws_security_group.lambda.id] # referencing the lambda security group
+  }
+  
+  # Allow connections from anywhere for development purposes
+  # In production, this should be restricted to specific IPs
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow MySQL connections from anywhere (development only)"
   }
   
   tags = {

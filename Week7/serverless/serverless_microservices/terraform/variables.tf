@@ -26,9 +26,21 @@ variable "db_username" {
 variable "db_password" {
   description = "Password for RDS database"
   type        = string
-  default = "2003!"
+  default = "MySecurePassword123!"
   sensitive   = true
 }
+variable "ec2_ami" {
+  description = "AMI for the EC2 instance"
+  type        = string
+  default = "ami-00ca32bbc84273381"
+}
+
+variable "key_name" {
+  description = "Key name for the EC2 instance"
+  type        = string
+  default = "aws_keys"
+}
+
 
 variable "db_name" {
   description = "Name of the database"
@@ -40,4 +52,10 @@ variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
   default     = "db.t3.micro"
+}
+
+variable "initialize_db" {
+  description = "Whether to initialize the database with tables"
+  type        = bool
+  default     = false
 }

@@ -2,8 +2,8 @@ resource "aws_lambda_function" "function" {
   function_name = "${var.project_name}-${var.environment}-${var.function_name}"
   role          = aws_iam_role.lambda_role.arn
   package_type  = "Image"
-  image_uri     = var.ecr_repository
-  
+  image_uri     = var.image_uri
+
   vpc_config {
     subnet_ids         = var.subnet_ids
     security_group_ids = var.security_group_ids

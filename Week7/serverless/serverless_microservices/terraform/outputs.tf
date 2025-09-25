@@ -33,6 +33,17 @@ output "rds_endpoint" {
   value       = module.rds.db_host
 }
 
+output "rds_port" {
+  description = "Port of the RDS instance"
+  value       = module.rds.db_port
+}
+
+output "rds_database_name" {
+  description = "Name of the RDS database"
+  value       = module.rds.db_name
+}
+
+
 output "dynamodb_table_name" {
   description = "Name of the DynamoDB table"
   value       = module.dynamodb.orders_table_name

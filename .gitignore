@@ -34,3 +34,14 @@ venv/
 ENV/
 env/
 .venv/
+
+# node modules
+node_modules/
+package-lock.json
+package.json
+
+# yarn
+yarn.lock
+yarn-error.log
+yarn-debug.log*
+yarn-info.log*

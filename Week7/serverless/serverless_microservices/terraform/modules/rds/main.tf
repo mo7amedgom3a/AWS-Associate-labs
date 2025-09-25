@@ -28,26 +28,3 @@ resource "aws_db_instance" "products" {
     Environment = var.environment
   }
 }
-
-# Create the products table
-resource "null_resource" "setup_database" {
-  depends_on = [aws_db_instance.products]
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      mysql -h ${aws_db_instance.products.address} -P ${aws_db_instance.products.port} -u ${var.db_username} -p${var.db_password} ${var.db_name} <<EOF
-      CREATE TABLE IF NOT EXISTS products (
-        product_id VARCHAR(36) PRIMARY KEY,
-        sku VARCHAR(100) NOT NULL UNIQUE,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        price DECIMAL(10, 2) NOT NULL,
-        stock_quantity INT NOT NULL DEFAULT 0,
-        is_active BOOLEAN NOT NULL DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      );
-      EOF
-    EOT
-  }
-}

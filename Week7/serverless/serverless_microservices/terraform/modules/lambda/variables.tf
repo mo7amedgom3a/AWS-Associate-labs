@@ -20,6 +20,11 @@ variable "ecr_repository" {
   type        = string
 }
 
+variable "image_uri" {
+  description = "Docker image URI for the Lambda function"
+  type        = string
+}
+
 variable "subnet_ids" {
   description = "Subnet IDs for the Lambda function"
   type        = list(string)
