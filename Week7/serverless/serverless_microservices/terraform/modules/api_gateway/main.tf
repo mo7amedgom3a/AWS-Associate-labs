@@ -17,6 +17,23 @@ resource "aws_api_gateway_resource" "products_proxy" {
   parent_id   = aws_api_gateway_resource.products.id
   path_part   = "{proxy+}"
 }
+# Root /products ANY method
+resource "aws_api_gateway_method" "products_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.products.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_root_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.products.id
+  http_method             = aws_api_gateway_method.products_root_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.products_lambda_invoke_arn
+}
+
 # PRODUCTS OPTIONS
 resource "aws_api_gateway_method" "products_options" {
   rest_api_id   = aws_api_gateway_rest_api.api.id
@@ -91,6 +108,23 @@ resource "aws_api_gateway_resource" "orders_proxy" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   parent_id   = aws_api_gateway_resource.orders.id
   path_part   = "{proxy+}"
+}
+
+# Root /orders ANY method
+resource "aws_api_gateway_method" "orders_root_any" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.orders.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "orders_root_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.orders.id
+  http_method             = aws_api_gateway_method.orders_root_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.orders_lambda_invoke_arn
 }
 
 # ORDERS
@@ -177,17 +211,22 @@ resource "aws_lambda_permission" "orders_apigw" {
 resource "aws_api_gateway_deployment" "api" {
   depends_on = [
     aws_api_gateway_integration.products_integration,
+    aws_api_gateway_integration.products_root_integration,
     aws_api_gateway_integration.orders_integration,
+    aws_api_gateway_integration.orders_root_integration,
     aws_api_gateway_integration.products_options_integration,
     aws_api_gateway_integration.orders_options_integration
-
   ]
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.products.id,
       aws_api_gateway_resource.products_proxy.id,
+      aws_api_gateway_method.products_root_any.id,
+      aws_api_gateway_integration.products_root_integration.id,
       aws_api_gateway_resource.orders.id,
       aws_api_gateway_resource.orders_proxy.id,
+      aws_api_gateway_method.orders_root_any.id,
+      aws_api_gateway_integration.orders_root_integration.id,
     ]))
   }
   lifecycle {

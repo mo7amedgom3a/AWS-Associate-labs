@@ -9,6 +9,13 @@ from app.database import get_dynamodb_client, get_table_name
 from app.schemas import OrderCreate, OrderResponse, OrderUpdate, OrderStatus
 
 app = FastAPI(title="Orders API")
+@app.get("/orders")
+def get_orders():
+    """
+    Get all orders
+    """
+    print("Hello, World!")
+    return {"message": "orders get"}
 
 @app.post("/orders", response_model=OrderResponse, status_code=201)
 def create_order(order: OrderCreate):
